@@ -12,17 +12,19 @@ get_input_by_adr <- function(dataframe, map_value, kpi_value, month_selected, ye
      # print("Data used to aggregate")
      # print(head(d))
      inputs <- aggregate(d$value ~ d$adr_id, FUN = sum)
-     names(inputs) = c("adr_id", "total")
-     inputs <- inputs[order(inputs$total, decreasing = T), ]
+     names(inputs) = c("adr_id", "arrivals")
+     inputs <- inputs[order(inputs$arrivals, decreasing = T), ]
      
      # mappings = read.csv("mappings/multimap_ras.csv", sep = ";")
      # mappings = mappings[mappings$MAP_ID == map_value, ]
      # 
      # inputs$adr_description = sapply(inputs$adr_id, function(x) mappings$AREA_LB_0[mappings$AREA_ID == x])
-     inputs
+     inputs <- extend_map(map_id = map_value, inputs = inputs)
      
 }
 
+
+## This function adds the columns adr_name to the aggregated dataframe with the fields adr_id and arrivals
 extend_map <- function(map_id, inputs){
           
           mappings <- read.csv("mappings/multimap_ras.csv", sep=";")
@@ -38,7 +40,9 @@ extend_map <- function(map_id, inputs){
           for (r in l) {inputs = rbind(inputs, r)}
           
           
-          mappings$tot_inputs <- sapply(inputs$adr_id, function(x) mappings$AREA_LB_0[mappings$AREA_ID == x])
-          mappings
+          inputs$adr_name <- sapply(inputs$adr_id, function(x) mappings$AREA_LB_0[mappings$AREA_ID == x])
+          adr_name_levels <- as.character(inputs$adr_name)
+          inputs$adr_name <- as.factor(adr_name_levels)
+          inputs
 
 }
