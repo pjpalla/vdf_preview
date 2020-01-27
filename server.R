@@ -23,7 +23,7 @@ source("R/utility.R")
 
 
 
-raw_io_min = read.csv("kpi/io_min.csv")
+raw_io_min = read.csv("kpi/io/io_data_min.csv")
 mappings <- read.csv("mappings/multimap_ras.csv", sep = ";")
 adr <- readOGR("shapefiles/MULTIMAP.shp")
 adr2 <- adr[adr$MAP_ID == 1, ]

@@ -16,9 +16,9 @@ use_credentials(profile = "vodafone_profile")
 
 
 bucketlist()
-bucket_name <- "vodafone-analytics"
-file_names <- get_bucket_df("vodafone-analytics")[["Key"]]
-print(file_names)
+# bucket_name <- "vodafone-analytics"
+# file_names <- get_bucket_df("vodafone-analytics")[["Key"]]
+# print(file_names)
 
 
 
