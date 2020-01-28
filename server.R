@@ -57,11 +57,15 @@ shinyServer(function(input, output) {
     adr$AREA_LB_0 = as.factor(adr_levels)
     adr$arrivals <- sapply(adr$AREA_LB_0, function(x) aggregated_inputs$arrivals[aggregated_inputs$adr_name == x])
     
+    ### here we define colours
+    reds <- colorRampPalette(brewer.pal(9, "Reds"))(100)
+    pal <- colorNumeric(reds[30:100], domain = adr$arrivals)
     
-    m <- leaflet(data = adr2) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
-              addPolygons(layerId = adr2$AREA_LB_0, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.5, fillColor = c('red', 'green', 'blue', 'yellow', 'orange'),
+    
+    m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
+              addPolygons(layerId = adr$AREA_LB_0, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.5, fillColor = ~pal(arrivals),
                           highlightOptions = highlightOptions(color = "white", weight = 2,
-                                                              bringToFront = TRUE), label = adr2$AREA_LB_0, labelOptions = labelOptions(clickable = FALSE, noHide = FALSE))              
+                                                              bringToFront = TRUE), label = adr$AREA_LB_0, labelOptions = labelOptions(clickable = FALSE, noHide = FALSE))              
               
     m
   })
