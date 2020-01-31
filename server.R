@@ -58,8 +58,8 @@ shinyServer(function(input, output) {
     adr$arrivals <- sapply(adr$AREA_LB_0, function(x) aggregated_inputs$arrivals[aggregated_inputs$adr_name == x])
     
     ### here we define colours
-    reds <- colorRampPalette(brewer.pal(9, "Reds"))(100)
-    pal <- colorNumeric(reds[30:100], domain = adr$arrivals)
+    reds <- colorRampPalette(brewer.pal(9, "OrRd"))(200)
+    pal <- colorNumeric(reds[30:200], domain = adr$arrivals)
     
     
     m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
