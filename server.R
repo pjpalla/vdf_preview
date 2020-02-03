@@ -49,20 +49,20 @@ shinyServer(function(input, output) {
   output$areas <- renderLeaflet({
     
     ### here we create the aggregated dataset with the arrivals to use to draw the map
-    aggregated_inputs <- get_input_by_adr(dataframe = raw_io_min, map_value = 3, kpi_value = "arrivals", month_selected = 2)
+    aggregated_inputs <- get_input_by_adr(dataframe = raw_io_min, map_value = 3, kpi_value = "arrivals", month_selected = 2, threshold = 0.005)
     
     ## now we add the arrivals to the adr map
     adr <- adr[adr$MAP_ID == 3, ]
     adr_levels = as.character(adr$AREA_LB_0)
     adr$AREA_LB_0 = as.factor(adr_levels)
-    adr$arrivals <- sapply(adr$AREA_LB_0, function(x) aggregated_inputs$arrivals[aggregated_inputs$adr_name == x])
+    adr$arrivals <- sapply(adr$AREA_LB_0, function(x) aggregated_inputs$filtered_arrivals[aggregated_inputs$adr_name == x])
     
     ### here we define colours
-    reds <- colorRampPalette(brewer.pal(9, "OrRd"))(200)
-    pal <- colorNumeric(reds[30:200], domain = adr$arrivals)
+    reds <- colorRampPalette(brewer.pal(9, "Reds"))(6)
+    pal <- colorNumeric(reds, domain = adr$filtered_arrivals)
     
     
-    m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
+    m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% 
               addPolygons(layerId = adr$AREA_LB_0, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 0.5, fillColor = ~pal(arrivals),
                           highlightOptions = highlightOptions(color = "white", weight = 2,
                                                               bringToFront = TRUE), label = adr$AREA_LB_0, labelOptions = labelOptions(clickable = FALSE, noHide = FALSE))              

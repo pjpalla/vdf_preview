@@ -3,7 +3,7 @@ library(dplyr)
 
 
 
-get_input_by_adr <- function(dataframe, map_value, kpi_value, month_selected, year_selected = 2019){
+get_input_by_adr <- function(dataframe, map_value, kpi_value, month_selected, year_selected = 2019, threshold){
      if (map_value )          
      d <- filter(dataframe, map == map_value & kpi == kpi_value) %>% 
                     filter(month(date) == month_selected & year(date) == year_selected)
@@ -20,6 +20,15 @@ get_input_by_adr <- function(dataframe, map_value, kpi_value, month_selected, ye
      # 
      # inputs$adr_description = sapply(inputs$adr_id, function(x) mappings$AREA_LB_0[mappings$AREA_ID == x])
      inputs <- extend_map(map_id = map_value, inputs = inputs)
+     
+     ### here we filter the arrivals to visualize only relevant values
+     inputs$percentage = round(inputs$arrivals/sum(inputs$arrivals), 6)
+     tot <- sum(inputs$arrivals)
+     inputs$filtered_arrivals <- sapply(inputs$arrivals, function(x){
+               value <- round(x/tot, 6)
+               ifelse(value >= threshold, x, 0)
+               })
+     inputs
      
 }
 
