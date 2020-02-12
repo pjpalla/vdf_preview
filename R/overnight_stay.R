@@ -1,0 +1,22 @@
+library(dplyr)
+source("R/input_output.R")
+
+
+### user_type possibile values: ITA, STR, ALL
+get_overnight_stay_by_adr <- function(dataset, map_id = 3, month, user_type){
+  if (user_type == "ALL"){
+    tmp_overnight <- dataset[dataset$map == map_id & dataset$mese == month & dataset$user_type != "INT", ] 
+  }else{
+    tmp_overnight <- dataset[dataset$map == map_id & dataset$mese == month & dataset$user_type == user_type, ]
+  }
+  
+  mappings <- read.csv("mappings/latest_multimap_ras.csv", sep=";")
+  mappings <- mappings[mappings$MAP_ID == map_id, ]
+  
+  tmp_overnight$adr_names <- sapply(tmp_overnight$adr_id, function(x) mappings$AREA_LB_0[mappings$AREA_ID == x])
+  
+  overnight <- tmp_overnight
+  #overnight <- extend_map(map_id = map_id, inputs = overnight)
+  overnight %>% select(map, mese, adr_id, adr_names, user_type, pernottamenti)
+
+}

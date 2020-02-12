@@ -27,6 +27,7 @@ get_input_by_adr <- function(dataframe, map_value, kpi_value, month_selected, ye
      inputs$filtered_arrivals <- sapply(inputs$arrivals, function(x){
                value <- round(x/tot, 6)
                ifelse(value >= threshold, x, 0)
+               #ifelse(value >= threshold & value < 0.005, x, 0)
                })
      inputs
      
