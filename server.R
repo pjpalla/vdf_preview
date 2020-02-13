@@ -29,7 +29,8 @@ source("R/overnight_stay.R")
 raw_io_min = read.csv("kpi/io/io_data_min.csv")
 overnight = read.csv("kpi/arrivals_attendances/pernottamenti_all.csv")
 mappings <- read.csv("mappings/multimap_ras.csv", sep = ";")
-adr <- readOGR("shapefiles/MULTIMAP.shp")
+#adr <- readOGR("shapefiles/MULTIMAP.shp")
+adr <- readOGR("shapefiles/light_adr.shp")
 #adr <- readOGR("shapefiles/map3.shp")
 # adr2 <- adr[adr$MAP_ID == 2, ]
 # x = as.character(adr2$AREA_LB_0)
@@ -85,18 +86,16 @@ shinyServer(function(input, output) {
     adr$arrivals <- sapply(adr$AREA_LB_0, function(x) aggregated_inputs$filtered_arrivals[aggregated_inputs$adr_name == x])
     adr <- adr[adr$arrivals > 0, ]
     ### here we define colours
-#    reds <- colorRampPalette(brewer.pal(9, "Reds"))(10)
-    #pal <- colorNumeric(reds[3:10], domain = adr$filtered_arrivals)
-    #adr <- adr[adr$arrivals > 0, ]
-    #top_values <- sort(adr$arrivals, decreasing = T)[1:16]
-    pal <- colorNumeric(
-      palette = brewer.pal(n=9, "PuBuGn")[3:9],
-      #palette = brewer.pal(n = 9, "PuBuGn")[c(1, 3, 5, 7, 9)],
-      domain = NULL)
 
-    #pal <- colorBin("Blues", 4, pretty = F)
+    # pal <- colorNumeric(
+    #   palette = brewer.pal(n=9, "PuBuGn")[3:9],
+    #   #palette = brewer.pal(n = 9, "PuBuGn")[c(1, 3, 5, 7, 9)],
+    #   domain = NULL)
     
-#    qpal <- colorQuantile("Blues", c(min(top_values), max(top_values)), n = 4)
+    ### colors bin definition ##
+    bins <- c(500, 2000, 3000, 4000, 4500, 5000, 6000, 7000, 10000, 15000, 20000, 25000, 30000, 60000, 65000, 150000)
+    pal <- colorBin("YlOrRd", domain = adr$arrivals, bin = bins)
+
     
     m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
               addPolygons(layerId = adr, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, fillColor = ~pal(arrivals),
@@ -107,56 +106,59 @@ shinyServer(function(input, output) {
     m
   })
   
-  # output$overnight <- renderLeaflet({
-  #       month = input$month1
-  #       user_type = input$user_type
-  # 
-  #   
-  #       aggregated_overnight_stay <- get_overnight_stay_by_adr(dataset = overnight, map_id = 3, month = month, user_type = user_type)
-  #       adr <- adr[adr$MAP_ID == 3, ]
-  #       adr <- adr[adr$AREA_LB_0 %in% aggregated_overnight_stay$adr_names, ]
-  #       
-  #       adr_levels = as.character(adr$AREA_LB_0)
-  #       adr$AREA_LB_0 = as.factor(adr_levels)
-  #       aos_levels = as.character(aggregated_overnight_stay$adr_names)
-  #       aggregated_overnight_stay$adr_names = as.factor(aos_levels)
-  #       #levels(aggregated_overnight_stay$adr_name) = levels(adr$AREA_LB_0)
-  #       adr$overnight <- sapply(adr$AREA_LB_0, function(x){
-  #             ifelse(x %in% aggregated_overnight_stay$adr_name, aggregated_overnight_stay$pernottamenti[aggregated_overnight_stay$adr_name == x], 0)
-  #             })
-  #             
-  #       adr <- adr[adr$overnight > 0, ]
-  #       ### here we define colours
-  #       #    reds <- colorRampPalette(brewer.pal(9, "Reds"))(10)
-  #       #pal <- colorNumeric(reds[3:10], domain = adr$filtered_arrivals)
-  #       #adr <- adr[adr$arrivals > 0, ]
-  #       #top_values <- sort(adr$arrivals, decreasing = T)[1:16]
-  #       if (user_type == "ITA"){
-  #         chosen_color = "Reds"
-  #       }else if (user_type == "STR"){
-  #         chosen_color = "Greens"
-  #       }else{
-  #         chosen_color = "Purples"
-  #       }
-  #       pal <- colorNumeric(
-  #         palette = brewer.pal(n=9, chosen_color)[3:9],
-  #         domain = NULL)
-  #       
-  #       #pal <- colorBin("Blues", 4, pretty = F)
-  #       
-  #       #    qpal <- colorQuantile("Blues", c(min(top_values), max(top_values)), n = 4)
-  #       
-  #       m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
-  #         addPolygons(layerId = adr, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, fillColor = ~pal(overnight),
-  #                     highlightOptions = highlightOptions(color = "white", weight = 2,
-  #                                                         bringToFront = TRUE), label = paste(adr$AREA_LB_0, ":", adr$overnight), labelOptions = labelOptions(clickable = FALSE, noHide = FALSE)) %>%
-  #         addLegend("bottomright", pal = pal, values = ~overnight, title = "pernottamenti", opacity = 1)
-  #       
-  #       m
-  #       
-  #   
-  #   
-  #   
-  # })
+  output$overnight <- renderLeaflet({
+        month = input$month1
+        user_type = input$user_type
+
+
+        aggregated_overnight_stay <- get_overnight_stay_by_adr(dataset = overnight, map_id = 3, month = month, user_type = user_type)
+        adr <- adr[adr$MAP_ID == 3, ]
+        adr <- adr[adr$AREA_LB_0 %in% aggregated_overnight_stay$adr_names, ]
+
+        adr_levels = as.character(adr$AREA_LB_0)
+        adr$AREA_LB_0 = as.factor(adr_levels)
+        aos_levels = as.character(aggregated_overnight_stay$adr_names)
+        aggregated_overnight_stay$adr_names = as.factor(aos_levels)
+        #levels(aggregated_overnight_stay$adr_name) = levels(adr$AREA_LB_0)
+        adr$overnight <- sapply(adr$AREA_LB_0, function(x){
+              ifelse(x %in% aggregated_overnight_stay$adr_name, aggregated_overnight_stay$pernottamenti[aggregated_overnight_stay$adr_name == x], 0)
+              })
+
+        adr <- adr[adr$overnight > 0, ]
+        ### here we define colours
+        #    reds <- colorRampPalette(brewer.pal(9, "Reds"))(10)
+        #pal <- colorNumeric(reds[3:10], domain = adr$filtered_arrivals)
+        #adr <- adr[adr$arrivals > 0, ]
+        #top_values <- sort(adr$arrivals, decreasing = T)[1:16]
+        if (user_type == "ITA"){
+          chosen_color = "Reds"
+        }else if (user_type == "STR"){
+          chosen_color = "Greens"
+        }else{
+          chosen_color = "Purples"
+        }
+        
+        
+        
+        pal <- colorNumeric(
+          palette = brewer.pal(n=9, chosen_color)[3:9],
+          domain = NULL)
+
+        #pal <- colorBin("Blues", 4, pretty = F)
+
+        #    qpal <- colorQuantile("Blues", c(min(top_values), max(top_values)), n = 4)
+
+        m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
+          addPolygons(layerId = adr, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, fillColor = ~pal(overnight),
+                      highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                          bringToFront = TRUE), label = paste(adr$AREA_LB_0, ":", adr$overnight), labelOptions = labelOptions(clickable = FALSE, noHide = FALSE)) %>%
+          addLegend("bottomright", pal = pal, values = ~overnight, title = "pernottamenti", opacity = 1)
+
+        m
+
+
+
+
+  })
   
 })
