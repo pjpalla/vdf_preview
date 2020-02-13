@@ -1,6 +1,7 @@
 library(stringr)
 library(lubridate)
 library(rlist)
+library(rgeos)
 
 ## This function converts the elements of the date field to Date objects
 convert_date <- function(data){
@@ -40,4 +41,13 @@ build_kpi_df <- function(pattern_search = "eventname=in_out_points/disaggregatio
           print("extraction completed!")
           data <- lapply(odata, function(x) read.csv(text = x, stringsAsFactors = FALSE))
           data <- do.call(rbind, data)
+}
+
+## This function allows to reduce the space required by the original spatial dataframe
+simplifySpatialDataframe <- function(spatial_dataframe){
+  sdf = gSimplify(spatial_dataframe, tol = 0.05, topologyPreserve = T)
+  ### gSimplify does not preserve @data dataframe of the original spatial df. We must recreate it.
+  sdf_data = spatial_dataframe@data
+  sdf_complete <- sp::SpatialPolygonsDataFrame(sdf, sdf_data)
+
 }
