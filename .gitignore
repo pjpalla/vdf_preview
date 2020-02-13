@@ -4,6 +4,7 @@
 .Ruserdata
 .Rproj
 .csv
-kpi/*
-mappings/*
+kpi/*.*
+mappings/*.*
 mappings/*.csv
+shapefiles/*.*
