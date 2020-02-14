@@ -50,13 +50,15 @@ shinyServer(function(input, output) {
     
   })
   
-  output$arrivals <- renderTable({
-            map_input = as.integer(input$map_choice)
+  output$arrivals <- renderPlotly({
+            map_input = as.integer(input$map_choice1)
             month_input = as.integer(input$month)
+            input_threshold = as.numeric(input$threshold/100)
+            input_kpi = input$kpi
             ### here we create the aggregated dataset with the arrivals to use to draw the map
-            aggregated_inputs <- get_input_by_adr(dataframe = raw_io_min, map_value = map_input, kpi_value = "arrivals", month_selected = month_input, threshold = 0.005)     
+            aggregated_inputs <- get_input_by_adr(dataframe = raw_io_min, map_value = map_input, kpi_value = input_kpi, month_selected = month_input, threshold = input_threshold)     
             aggregated_inputs$arrivals <- as.integer(aggregated_inputs$arrivals)
-            aggregated_inputs$percentage <- paste(round(aggregated_inputs$percentage,3)*100, "%")
+            aggregated_inputs$percentage <- paste(round(aggregated_inputs$percentage,3)*100, "%", sep = '')
             names(aggregated_inputs)[2] = "ingressi"
             names(aggregated_inputs)[3] = "adr"
             names(aggregated_inputs)[4] = "percentuale"            
@@ -66,18 +68,41 @@ shinyServer(function(input, output) {
             #           percentuale = percentage
             # )
             aggregated_inputs <- aggregated_inputs[, c(2, 3, 4)]
-            aggregated_inputs <- head(aggregated_inputs[])          
+            aggregated_inputs <- aggregated_inputs[1:5, ]
+            
+            
+            selected_color = colorRampPalette(brewer.pal(9, "Reds"))
+            
+            p <- plot_ly(
+              data = aggregated_inputs,
+              y = aggregated_inputs$adr,
+              x = aggregated_inputs$ingressi,
+              type = "bar",
+              orientation = 'h',
+              marker = list(color = selected_color,
+                            line = list(color = "grey",
+                                        width = 1.5)),
+              text = ~paste(adr, ": ", percentuale, sep = ''),
+              hoverinfo = 'text'
+              # marker = list(color = selected_color)
+              
+            ) %>% layout(title = paste(input_kpi, ": Top AdR per numero di ingressi"), yaxis = list(title = "", tickfont = list(size = 9, color = 'black')), xaxis = list(title="Visitatori (%)", tickfont = list(size = 8)), margin = m)
+            
+            
+            
+            
             }) 
   
   output$areas <- renderLeaflet({
     
-    map_input = as.integer(input$map_choice)
+    map_input = as.integer(input$map_choice1)
     month_input = as.integer(input$month)
     input_threshold = as.numeric(input$threshold/100)
+    input_kpi = input$kpi
     print(input_threshold)
     
     ### here we create the aggregated dataset with the arrivals to use to draw the map
-    aggregated_inputs <- get_input_by_adr(dataframe = raw_io_min, map_value = map_input, kpi_value = "arrivals", month_selected = month_input, threshold = input_threshold)
+    aggregated_inputs <- get_input_by_adr(dataframe = raw_io_min, map_value = map_input, kpi_value = input_kpi, month_selected = month_input, threshold = input_threshold)
     
     ## now we add the arrivals to the adr map
     adr <- adr[adr$MAP_ID == map_input, ]
@@ -93,8 +118,12 @@ shinyServer(function(input, output) {
     #   domain = NULL)
     
     ### colors bin definition ##
+    color_palette = "YlOrRd" 
+    if (input_kpi == "departures"){
+      color_palette = "YlGnBu"
+    }
     bins <- c(500, 2000, 3000, 4000, 4500, 5000, 6000, 7000, 10000, 15000, 20000, 25000, 30000, 60000, 65000, 150000)
-    pal <- colorBin("YlOrRd", domain = adr$arrivals, bin = bins)
+    pal <- colorBin(color_palette, domain = adr$arrivals, bin = bins)
 
     
     m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
@@ -109,10 +138,11 @@ shinyServer(function(input, output) {
   output$overnight <- renderLeaflet({
         month = input$month1
         user_type = input$user_type
+        map_input = input$map_choice2
 
 
-        aggregated_overnight_stay <- get_overnight_stay_by_adr(dataset = overnight, map_id = 3, month = month, user_type = user_type)
-        adr <- adr[adr$MAP_ID == 3, ]
+        aggregated_overnight_stay <- get_overnight_stay_by_adr(dataset = overnight, map_id = map_input, month = month, user_type = user_type)
+        adr <- adr[adr$MAP_ID == map_input, ]
         adr <- adr[adr$AREA_LB_0 %in% aggregated_overnight_stay$adr_names, ]
 
         adr_levels = as.character(adr$AREA_LB_0)

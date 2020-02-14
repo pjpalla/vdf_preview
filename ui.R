@@ -47,15 +47,19 @@ shinyUI(fluidPage(theme = "preview.css",
   #           mese considerato. Vengono riportate in mappa solamente le Aree di Riferimento (AdR) che contribuiscono con una determinata soglia percentuale agli ingressi complessivamente registrati sul territorio sardo"), 
   
   fluidRow(
-
+    
+    
     column(5,
            
            wellPanel(
-             radioButtons("map_choice", "Seleziona mappa:",
-                          c("Mappa 1 (Comuni)" = 1,
-                            "Mappa 2 (Province)" = 2, 
-                            "Mappa 3 (Comuni + POI)" = 3,
-                            "Mappa 4 (Province + POI)" = 4), selected = 3), br(),
+             radioButtons("kpi", "Seleziona KPI:",
+                          c("Ingressi" = "arrivals",
+                            "Partenze" = "departures"), selected = "arrivals"), br(),               
+             radioButtons("map_choice1", "Seleziona mappa:",
+                          c("Comuni" = 1,
+                            "Province" = 2, 
+                            "Comuni + PoI" = 3,
+                            "Province + PoI" = 4), selected = 3), br(),
              selectInput("month", "Seleziona mese:",
                          c("Febbraio" = 2,
                            "Marzo" = 3,
@@ -69,7 +73,7 @@ shinyUI(fluidPage(theme = "preview.css",
                          value = 0.5, step = 0.1),br(), br(),
              
              h3("Ingressi in Sardegna"),br(),
-             tableOutput("arrivals")
+             plotlyOutput("arrivals")
              
            )
            
@@ -81,25 +85,32 @@ shinyUI(fluidPage(theme = "preview.css",
   ),br(),
   
   h3("Distribuzione pernottamenti"), br(),
-  fluidRow(offset = 1, 
-    column(4,
-           selectInput("month1", "Seleziona mese:",
-                       c("Febbraio" = 2,
-                         "Marzo" = 3,
-                         "Aprile" = 4,
-                         "Maggio" = 5,
-                         "Giugno" = 6), selected = 3), br(),
-
-           radioButtons("user_type", "Tipologia visitatori:",
-                              c("Italiani" = "ITA",
-                                "Stranieri" = "STR",
-                                "Italiani e Stranieri" = "ALL"), selected = "STR"), br(), br(),
-
-           h3("Pernottanmenti in Sardegna"),br()
-           ),
+  fluidRow(
+   
+      column(5,
+             wellPanel(
+               radioButtons("map_choice2", "Seleziona mappa:",
+                            c("Comuni" = 1,
+                              "Comuni + PoI" = 3), selected = 1), br(),             
+               selectInput("month1", "Seleziona mese:",
+                           c("Febbraio" = 2,
+                             "Marzo" = 3,
+                             "Aprile" = 4,
+                             "Maggio" = 5,
+                             "Giugno" = 6), selected = 3), br(),
+               
+               radioButtons("user_type", "Tipologia visitatori:",
+                            c("Italiani" = "ITA",
+                              "Stranieri" = "STR",
+                              "Italiani e Stranieri" = "ALL"), selected = "STR"), br(), br(),
+               
+               h3("Pernottanmenti in Sardegna"),br()
+      )      
+      
+    ),
 
            #tableOutput("ar,
-    column(6,
+    column(7,
            leafletOutput("overnight", height = "600")
     )
   )

@@ -3,9 +3,12 @@ source("R/input_output.R")
 
 
 ### user_type possibile values: ITA, STR, ALL
-get_overnight_stay_by_adr <- function(dataset, map_id = 3, month, user_type){
+get_overnight_stay_by_adr <- function(dataset, map_id, month, user_type){
   if (user_type == "ALL"){
-    tmp_overnight <- dataset[dataset$map == map_id & dataset$mese == month & dataset$user_type != "INT", ] 
+    tmp_overnight <- dataset[dataset$map == map_id & dataset$mese == month & dataset$user_type != "INT", ]
+    tmp_overnight <- aggregate(tmp_overnight$pernottamenti ~ tmp_overnight$adr + tmp_overnight$adr_id + tmp_overnight$map + tmp_overnight$mese, FUN = sum)
+    names(tmp_overnight) = c("adr_names", "adr_id", "map", "mese", "pernottamenti")
+    
   }else{
     tmp_overnight <- dataset[dataset$map == map_id & dataset$mese == month & dataset$user_type == user_type, ]
   }
@@ -17,6 +20,6 @@ get_overnight_stay_by_adr <- function(dataset, map_id = 3, month, user_type){
   
   overnight <- tmp_overnight
   #overnight <- extend_map(map_id = map_id, inputs = overnight)
-  overnight %>% select(map, mese, adr_id, adr_names, user_type, pernottamenti)
+  overnight %>% select(map, mese, adr_id, adr_names, pernottamenti)
 
 }
