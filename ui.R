@@ -9,6 +9,7 @@
 
 library(shiny)
 library(leaflet)
+library(plotly)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(theme = "preview.css",
@@ -38,10 +39,10 @@ shinyUI(fluidPage(theme = "preview.css",
   #titlePanel("Old Faithful Geyser Data"),
 
   # Sidebar with a slider input for number of bins
-           h3("Punti di accesso alla Sardegna: distribuzione degli ingressi"),br(),
+           h3("Punti di accesso alla Sardegna: distribuzione degli ingressi e delle uscite"),br(),
   div(class = "jumbotron", 
       #h2("Distribuzione degli ingressi", class='text-center'),br(),
-      p(HTML("La mappa rappresenta la distribuzione degli <b>ingressi</b> in Sardegna sulla base dei dati forniti da <b>Vodafone</b>. Gli ingressi sono espressi in funzione della mappa prescelta e del mese considerato. Vengono riportate in mappa solamente le <b>Aree di Riferimento</b> (AdR) che contribuiscono con una determinata soglia percentuale agli ingressi complessivamente registrati sul territorio sardo."))),
+      p(HTML("La mappa rappresenta la distribuzione degli <b>ingressi</b> e delle <b>uscite</b> in Sardegna sulla base dei dati forniti da <b>Vodafone</b>. Gli ingressi sono espressi in funzione della mappa prescelta e del mese considerato. Vengono riportate in mappa solamente le <b>Aree di Riferimento</b> (AdR) che contribuiscono con una determinata soglia percentuale agli ingressi complessivamente registrati sul territorio sardo."))),
   
   # wellPanel("La mappa rappresenta la distribuzione degli ingressi in Sardegna sulla base dei dati forniti da Vodafone. Gli ingressi sono espressi in funzione della mappa prescelta e del
   #           mese considerato. Vengono riportate in mappa solamente le Aree di Riferimento (AdR) che contribuiscono con una determinata soglia percentuale agli ingressi complessivamente registrati sul territorio sardo"), 
@@ -54,7 +55,7 @@ shinyUI(fluidPage(theme = "preview.css",
            wellPanel(
              radioButtons("kpi", "Seleziona KPI:",
                           c("Ingressi" = "arrivals",
-                            "Partenze" = "departures"), selected = "arrivals"), br(),               
+                            "Uscite" = "departures"), selected = "arrivals"), br(),               
              radioButtons("map_choice1", "Seleziona mappa:",
                           c("Comuni" = 1,
                             "Province" = 2, 
@@ -70,9 +71,9 @@ shinyUI(fluidPage(theme = "preview.css",
                          "Soglia arrivi (%):",
                          min = 0,
                          max = 5,
-                         value = 0.5, step = 0.1),br(), br(),
+                         value = 0.5, step = 0.1),br(), br(), br(), br(), br(), br(),
              
-             h3("Ingressi in Sardegna"),br(),
+             h3("Punti di accesso: flusso di visitatori"),br(),
              plotlyOutput("arrivals")
              
            )
@@ -80,9 +81,31 @@ shinyUI(fluidPage(theme = "preview.css",
          
     ),
     column(7,
-          leafletOutput("areas", height = "700")    
+          leafletOutput("areas", height = "600"),
+          h3("Tipologia visitatori"),br(), br(),
+          plotlyOutput("tot_users")
     )
   ),br(),
+  h3("Provenienze"), br(),
+  fluidRow(
+    column(2,
+           wellPanel(
+             radioButtons("kpi1", "Seleziona KPI:",
+                          c("Ingressi" = "arrivals",
+                            "Uscite" = "departures"), selected = "arrivals"), br(),
+             selectInput("month1", "Seleziona mese:",
+                         c("Febbraio" = 2,
+                           "Marzo" = 3,
+                           "Aprile" = 4,
+                           "Maggio" = 5,
+                           "Giugno" = 6), selected = 3))             
+           ),
+    column(5,
+           plotlyOutput("accessi_str")),
+    column(5,
+           plotlyOutput("accessi_ita"))
+    
+  ),
   
   h3("Distribuzione pernottamenti"), br(),
   fluidRow(
@@ -92,7 +115,7 @@ shinyUI(fluidPage(theme = "preview.css",
                radioButtons("map_choice2", "Seleziona mappa:",
                             c("Comuni" = 1,
                               "Comuni + PoI" = 3), selected = 1), br(),             
-               selectInput("month1", "Seleziona mese:",
+               selectInput("month2", "Seleziona mese:",
                            c("Febbraio" = 2,
                              "Marzo" = 3,
                              "Aprile" = 4,
