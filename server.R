@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(shinydashboard)
 library(shinyjs)
 library(leaflet)
 library(rgdal)
@@ -32,7 +33,7 @@ tot_inputs_by_user <- read.csv("kpi/io/tot_ingressi_per_user_type_mid.csv")
 provenienze <- read.csv("kpi/io/provenienze_ita_str_max.csv")
 mappings <- read.csv("mappings/multimap_ras.csv", sep = ";")
 vod_sired_mappings <- read.csv("mappings/sired_vodafone_mappings.csv", sep=';')
-sired_data <- read.csv("kpi/arrivals_attendances/dati_Gen-Giu_2019.csv")
+sired_data <- read.csv("kpi/arrivals_attendances/dati_Gen-Giu_2019.csv", encoding = 'UTF-8')
 #adr <- readOGR("shapefiles/MULTIMAP.shp")
 adr <- readOGR("shapefiles/light_adr.shp")
 mesi = c("Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno")
@@ -278,7 +279,7 @@ shinyServer(function(input, output) {
         if (user_type == "ITA"){
           chosen_color = "Reds"
         }else if (user_type == "STR"){
-          chosen_color = "Greens"
+          chosen_color = "GnBu"
         }else{
           chosen_color = "Purples"
         }
@@ -290,12 +291,16 @@ shinyServer(function(input, output) {
         #pal <- colorBin("Blues", 4, pretty = F)
 
         #    qpal <- colorQuantile("Blues", c(min(top_values), max(top_values)), n = 4)
+        title <- tags$div(
+          HTML("Dati Vodafone")
+        )  
 
         m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
           addPolygons(layerId = adr, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, fillColor = ~pal(overnight),
                       highlightOptions = highlightOptions(color = "white", weight = 2,
                                                           bringToFront = TRUE), label = paste(adr$AREA_LB_0, ":", adr$overnight), labelOptions = labelOptions(clickable = FALSE, noHide = FALSE)) %>%
-          addLegend("bottomright", pal = pal, values = ~overnight, title = "pernottamenti", opacity = 1)
+          addLegend("bottomright", pal = pal, values = ~overnight, title = "pernottamenti", opacity = 1) %>%
+          addControl(title, position = "topleft")
 
         m
   })
@@ -306,6 +311,47 @@ shinyServer(function(input, output) {
     map_input = input$map_choice2
     
     sired_overnight = get_sired_overnight_stay(dataset = sired_data, month = month, mapping = vod_sired_mappings, user_type = user_type)
+    adr <- adr[adr$MAP_ID == map_input, ]
+    adr <- adr[adr$AREA_LB_0 %in% sired_overnight$adr_names, ]
+    
+    adr_levels = as.character(adr$AREA_LB_0)
+    adr$AREA_LB_0 = as.factor(adr_levels)
+    sos_levels = as.character(sired_overnight$adr_names) ##sired overnight stays
+    sired_overnight$adr_names = as.factor(sos_levels)
+    #levels(aggregated_overnight_stay$adr_name) = levels(adr$AREA_LB_0)
+    adr$overnight <- sapply(adr$AREA_LB_0, function(x){
+      ifelse(x %in% sired_overnight$adr_names, sired_overnight$pernottamenti[sired_overnight$adr_names == x], 0)
+    })
+    adr <- adr[adr$overnight > 0, ]
+    if (user_type == "ITA"){
+      chosen_color = "Oranges"
+    }else if (user_type == "STR"){
+      chosen_color = "Greens"
+    }else{
+      chosen_color = "RdPu"
+    }
+    
+    pal <- colorNumeric(
+      palette = brewer.pal(n=9, chosen_color)[3:9],
+      domain = NULL)
+    
+    #pal <- colorBin("Blues", 4, pretty = F)
+    
+    #    qpal <- colorQuantile("Blues", c(min(top_values), max(top_values)), n = 4)
+    title <- tags$div(
+      HTML("Dati SiRed")
+    )  
+    
+    m <- leaflet(data = adr) %>% setView(lng=8.981, lat=40.072, zoom=8) %>% addTiles() %>%
+      addPolygons(layerId = adr, color = "#444444", weight = 1, smoothFactor = 0.5, opacity = 1.0, fillOpacity = 1, fillColor = ~pal(overnight),
+                  highlightOptions = highlightOptions(color = "white", weight = 2,
+                                                      bringToFront = TRUE), label = paste(adr$AREA_LB_0, ":", adr$overnight), labelOptions = labelOptions(clickable = FALSE, noHide = FALSE)) %>%
+      addLegend("bottomright", pal = pal, values = ~overnight, title = "pernottamenti", opacity = 1) %>%
+      addControl(title, position = "topleft")
+    
+    m
+    
+    
     
     
   })
