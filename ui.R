@@ -8,12 +8,13 @@
 #
 
 library(shiny)
+library(shinydashboard)
 library(leaflet)
 library(plotly)
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(theme = "preview.css",
-  
+
   tags$head(tags$style( type = "text/css", '
       .irs-line-mid{
         background: #428bca ;
@@ -47,9 +48,9 @@ shinyUI(fluidPage(theme = "preview.css",
   # wellPanel("La mappa rappresenta la distribuzione degli ingressi in Sardegna sulla base dei dati forniti da Vodafone. Gli ingressi sono espressi in funzione della mappa prescelta e del
   #           mese considerato. Vengono riportate in mappa solamente le Aree di Riferimento (AdR) che contribuiscono con una determinata soglia percentuale agli ingressi complessivamente registrati sul territorio sardo"), 
   
+  
+
   fluidRow(
-    
-    
     column(5,
            
            wellPanel(
@@ -110,7 +111,7 @@ shinyUI(fluidPage(theme = "preview.css",
   h3("Distribuzione pernottamenti"), br(),
   fluidRow(
    
-      column(5,
+      column(4,
              wellPanel(
                radioButtons("map_choice2", "Seleziona mappa:",
                             c("Comuni" = 1,
@@ -125,7 +126,7 @@ shinyUI(fluidPage(theme = "preview.css",
                radioButtons("user_type", "Tipologia visitatori:",
                             c("Italiani" = "ITA",
                               "Stranieri" = "STR",
-                              "Italiani e Stranieri" = "ALL"), selected = "STR"), br(), br(),
+                              "Italiani e Stranieri" = "ALL"), selected = "ITA"), br(), br(),
                
                h3("Pernottanmenti in Sardegna"),br()
       )      
@@ -133,10 +134,12 @@ shinyUI(fluidPage(theme = "preview.css",
     ),
 
            #tableOutput("ar,
-    column(7,
-           leafletOutput("overnight", height = "600")
-    )
-  )
+    column(4,
+           leafletOutput("overnight", height = "600")),
+    column(4,
+           leafletOutput("sired_overnight", height = "600")))
+))
+
 
 
   # sidebarLayout(
@@ -167,4 +170,5 @@ shinyUI(fluidPage(theme = "preview.css",
   #      #plotOutput("distPlot")
   #   )
   # )
-))
+
+
