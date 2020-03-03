@@ -30,9 +30,24 @@ get_overnight_stay_by_adr <- function(dataset, map_id, month, user_type){
 get_sired_overnight_stay <- function(dataset, month, user_type, mapping){
   
   sired_dataset = dataset
-  sired_dataset <- sired_dataset %>% filter(Mese == month, Nazionalita == user_type)
+  
+  if (user_type == "ALL"){
+    sired_dataset <- sired_dataset %>% filter(Mese == month, Nazionalita != 'INT')
+  }else{
+    sired_dataset <- sired_dataset %>% filter(Mese == month, Nazionalita == user_type)
+  }
+  
   sired_dataset <- aggregate(sired_dataset$Pre ~ sired_dataset$comune + sired_dataset$Mese, FUN = sum)
-  names(sired_dataset) = c("comune", "mese", "pernottamenti")
-  sired_dataset$adr_names <- sapply(sired_dataset$comune, function(x) mapping$Vodafone[mapping$Sired == x])
+  names(sired_dataset) = c("adr_names", "mese", "pernottamenti")
+  #sired_dataset$adr_names <- sapply(sired_dataset$comune, function(x) mapping$Vodafone[mapping$Sired == x])
+  sired_municipalities = as.character(sired_dataset$adr_names)
+  convertion <- function(x){
+    return(as.character(mapping$Vodafone[mapping$Sired == x]))
+  }
+  municipalities <- as.character(sapply(sired_municipalities, convertion))
+  
+  sired_dataset$adr_names = municipalities
   sired_dataset
+  
+  
 }
